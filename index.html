@@ -1,859 +1,1062 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lisomusic - online stream</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
-
-  <style>
-    /* Reset and Base Global Styles */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    html,
-    body {
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-      /* Strict defense against horizontal shifting/scrolling */
-      background-color: #0b0f19;
-      color: #ffffff;
-    }
-
-    body {
-      padding-bottom: 140px;
-      /* Safe cushion area for global media controller overlay */
-    }
-
-    /* Responsive Header & Navigation Framework */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 5%;
-      background-color: #111827;
-      border-bottom: 1px solid #1f2937;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #10b981;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      cursor: pointer;
-    }
-
-    nav {
-      max-width: 100%;
-    }
-
-    nav ul {
-      display: flex;
-      list-style: none;
-      gap: 20px;
-      align-items: center;
-      flex-wrap: wrap;
-      /* Wraps items cleanly on extra narrow displays */
-    }
-
-    nav ul li a {
-      color: #9ca3af;
-      text-decoration: none;
-      font-weight: 500;
-      font-size: 15px;
-      transition: color 0.3s;
-      white-space: nowrap;
-    }
-
-    nav ul li a:hover,
-    nav ul li a.active {
-      color: #ffffff;
-    }
-
-    /* Hero Landing Jumbotron Section */
-    .hero {
-      background: linear-gradient(135deg, #111827 0%, #0b0f19 100%);
-      padding: 50px 5%;
-      text-align: center;
-      border-bottom: 1px solid #1f2937;
-    }
-
-    .hero-content {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
-    .hero h1 {
-      font-size: clamp(28px, 5vw, 42px);
-      /* Responsive typography matching scale without break-out */
-      line-height: 1.2;
-      margin-bottom: 15px;
-    }
-
-    .hero h1 span {
-      color: #10b981;
-    }
-
-    .hero p {
-      color: #9ca3af;
-      font-size: clamp(14px, 2vw, 18px);
-      margin-bottom: 30px;
-    }
-
-    .search-bar {
-      display: flex;
-      align-items: center;
-      background-color: #1f2937;
-      max-width: 100%;
-      width: 500px;
-      margin: 0 auto;
-      border-radius: 50px;
-      padding: 5px 20px;
-      border: 1px solid #374151;
-    }
-
-    .search-bar i {
-      color: #9ca3af;
-      margin-right: 12px;
-    }
-
-    .search-bar input {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: white;
-      width: 100%;
-      font-size: 16px;
-      padding: 10px 0;
-    }
-
-    /* View Core Containers layout */
-    main {
-      padding: 40px 5%;
-      max-width: 100%;
-    }
-
-    .music-section h2,
-    .video-section h2 {
-      font-size: clamp(20px, 4vw, 24px);
-      margin-bottom: 25px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .music-section h2 i,
-    .video-section h2 i {
-      color: #10b981;
-    }
-
-    /* Adaptive Component Grid Layer Matrix - Clean Columns for All Layout Viewports */
-    .music-grid,
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 25px;
-    }
-
-    /* Screen Breakpoints Matrix for Strict Fitting */
-    @media (max-width: 1024px) {
-
-      .music-grid,
-      .video-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 640px) {
-      header {
-        flex-direction: column;
-        text-align: center;
-        padding: 20px 5%;
-      }
-
-      nav ul {
-        justify-content: center;
-        gap: 15px;
-      }
-
-      .music-grid,
-      .video-grid {
-        grid-template-columns: 1fr;
-        /* True single column stack on mobile phones */
-      }
-    }
-
-    /* Structural Artist & Album Cards UI */
-    .artist-card {
-      background-color: #111827;
-      padding: 16px;
-      border-radius: 12px;
-      transition: transform 0.3s, background-color 0.3s;
-      cursor: pointer;
-      border: 1px solid #1f2937;
-      width: 100%;
-    }
-
-    .artist-card:hover {
-      transform: translateY(-5px);
-      background-color: #1f2937;
-    }
-
-    .card-img {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 1;
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 15px;
-      background-color: #1f2937;
-    }
-
-    .card-img img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .play-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .play-overlay i {
-      font-size: 36px;
-      color: #10b981;
-    }
-
-    .artist-card:hover .play-overlay {
-      opacity: 1;
-    }
-
-    .artist-card h3 {
-      font-size: 18px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-bottom: 6px;
-    }
-
-    .artist-card p {
-      color: #9ca3af;
-      font-size: 14px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* Embedded YouTube Component UI Layout Block */
-    .video-section {
-      margin-top: 60px;
-      border-top: 1px solid #1f2937;
-      padding-top: 40px;
-    }
-
-    .video-card {
-      background-color: #111827;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid #1f2937;
-      transition: transform 0.3s;
-      width: 100%;
-    }
-
-    .video-card:hover {
-      transform: translateY(-5px);
-    }
-
-    .video-wrapper {
-      position: relative;
-      width: 100%;
-      padding-bottom: 56.25%;
-      /* Fixed aspect lock aspect ratio 16:9 */
-      height: 0;
-    }
-
-    .video-wrapper iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      border: 0;
-    }
-
-    .video-meta {
-      padding: 15px;
-    }
-
-    .video-meta h4 {
-      font-size: 16px;
-      margin-bottom: 5px;
-      color: #ffffff;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .video-meta p {
-      color: #9ca3af;
-      font-size: 13px;
-    }
-
-    /* Fluid Dynamic Playlist Viewport Panel */
-    .playlist-view {
-      background-color: #111827;
-      border-radius: 16px;
-      padding: clamp(15px, 3vw, 30px);
-      margin-top: 20px;
-      border: 1px solid #1f2937;
-      width: 100%;
-    }
-
-    .playlist-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #1f2937;
-      padding-bottom: 20px;
-      margin-bottom: 25px;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-
-    .artist-profile-summary {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
-
-    .artist-profile-summary img {
-      width: 70px;
-      height: 70px;
-      border-radius: 8px;
-      object-fit: cover;
-      border: 2px solid #10b981;
-    }
-
-    .close-playlist-btn {
-      background-color: #1f2937;
-      border: none;
-      color: #ffffff;
-      padding: 10px 20px;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .close-playlist-btn:hover {
-      background-color: #ef4444;
-    }
-
-    .album-block {
-      margin-bottom: 30px;
-      background: #0b0f19;
-      padding: clamp(12px, 2vw, 20px);
-      border-radius: 12px;
-      border: 1px solid #1f2937;
-      width: 100%;
-    }
-
-    .album-title-meta {
-      font-size: 17px;
-      color: #10b981;
-      margin-bottom: 15px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    /* Architecture layout for individual Tracklist Rows Selection */
-    .track-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-      border-bottom: 1px solid #111827;
-      gap: 10px;
-    }
-
-    .track-row:hover {
-      background-color: #1f2937;
-    }
-
-    .track-row-left {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      min-width: 0;
-      /* Prevents long string overflows */
-      flex: 1;
-    }
-
-    .track-row-left span:last-child {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .track-idx {
-      color: #6b7280;
-      font-weight: bold;
-      width: 20px;
-      flex-shrink: 0;
-    }
-
-    /* Structural Responsive Footer Architecture */
-    footer {
-      background-color: #111827;
-      border-top: 1px solid #1f2937;
-      padding: 40px 5% 20px 5%;
-      margin-top: 60px;
-      width: 100%;
-    }
-
-    .footer-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 30px;
-      margin-bottom: 30px;
-    }
-
-    .footer-brand {
-      flex: 1.5;
-      min-width: 260px;
-    }
-
-    .footer-brand p {
-      color: #9ca3af;
-      font-size: 14px;
-      margin-top: 15px;
-      line-height: 1.6;
-    }
-
-    .footer-links {
-      display: flex;
-      gap: 40px, 60px;
-      flex-wrap: wrap;
-      flex: 2;
-      justify-content: flex-end;
-    }
-
-    .footer-column {
-      min-width: 140px;
-    }
-
-    .footer-column h5 {
-      font-size: 15px;
-      color: #ffffff;
-      margin-bottom: 15px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .footer-column ul {
-      list-style: none;
-    }
-
-    .footer-column ul li {
-      margin-bottom: 10px;
-    }
-
-    .footer-column ul li a {
-      color: #9ca3af;
-      text-decoration: none;
-      font-size: 14px;
-      transition: color 0.2s;
-    }
-
-    .footer-column ul li a:hover {
-      color: #10b981;
-    }
-
-    .footer-bottom {
-      border-top: 1px solid #1f2937;
-      padding-top: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 15px;
-    }
-
-    .footer-bottom p {
-      color: #6b7280;
-      font-size: 13px;
-    }
-
-    .footer-socials {
-      display: flex;
-      gap: 15px;
-    }
-
-    .footer-socials a {
-      color: #9ca3af;
-      font-size: 18px;
-      transition: color 0.2s, transform 0.2s;
-    }
-
-    .footer-socials a:hover {
-      color: #10b981;
-      transform: scale(1.1);
-    }
-
-    @media (max-width: 768px) {
-      .footer-links {
-        justify-content: flex-start;
-        width: 100%;
-      }
-    }
-
-    /* Fixed Persistent Bottom Overlay Media Player Framework */
-    .audio-player {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background-color: #111827;
-      border-top: 1px solid #1f2937;
-      padding: 15px 5%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 1000;
-      visibility: hidden;
-      gap: 15px;
-    }
-
-    .player-info {
-      min-width: 0;
-      /* Fixes block expansion mechanics on mobile phone flex boxes */
-      flex: 1;
-    }
-
-    .player-info h4 {
-      font-size: 15px;
-      margin-bottom: 2px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .player-info p {
-      color: #9ca3af;
-      font-size: 13px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .player-controls button {
-      background-color: #10b981;
-      color: white;
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 18px;
-      cursor: pointer;
-      border: none;
-      flex-shrink: 0;
-    }
-  </style>
-</head>
-
-<body>
-
-  <header>
-    <div class="logo" onclick="resetToHomeView()">
-      <i class="fa-solid fa-music"></i> Lisomusic
-    </div>
-    <nav>
-      <ul>
-        <li><a href="#" class="active" id="homeNavLink" onclick="resetToHomeView()">Home</a></li>
-        <li><a href="#" id="discoverNavLink" onclick="scrollToCatalogSection()">Discover Artists</a></li>
-        <li><a href="#" id="videosNavLink" onclick="scrollToVideoSection()">Featured Videos</a></li>
-      </ul>
-    </nav>
-  </header>
-
-  <input type="file" id="admin-tag-uploader" accept="audio/mp3" style="display: none;" onchange="readMP3Tags(this)">
-
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Your Music. Your Audience. <br><span>Upload your music With us</span></h1>
-      <p>Upload, share, and stream your favorite tracks in high quality. No limits, just pure sound.</p>
-      <div class="search-bar">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="globalSearchField" placeholder="Search for artists, tracks, or soundscapes..." oninput="filterGlobalTracks()">
-      </div>
-    </div>
-  </section>
-
-  <main>
-    <div id="playlistDisplayWrapper" style="display: none; margin-bottom: 40px; width: 100%;"></div>
-
-    <section class="music-section" id="catalog-section">
-      <h2><i class="fa-solid fa-users"></i> Featured Artists & Creators</h2>
-      <div class="music-grid" id="artistsDisplayGrid"></div>
-    </section>
-
-    <section class="video-section" id="videos-section">
-      <h2><i class="fa-brands fa-youtube"></i> Featured Music Videos & Live Sessions</h2>
-      <div class="video-grid">
-
-        <!-- Video Card 1 -->
-        <div class="video-card">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/vY4ENT25Naw" allowfullscreen></iframe>
-          </div>
-          <div class="video-meta">
-            <h4>Kotwembela (Official Video)</h4>
-            <p>Phillip Lisomona Music</p>
-          </div>
-        </div>
-
-        <!-- Video Card 2 -->
-        <div class="video-card">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/pV6dE6-2A60" allowfullscreen></iframe>
-          </div>
-          <div class="video-meta">
-            <h4>Ndakulumba (feat. Ashers Masempela)</h4>
-            <p>Phillip Lisomona Music</p>
-          </div>
-        </div>
-
-        <!-- Video Card 3 -->
-        <div class="video-card">
-          <div class="video-wrapper">
-            <iframe src="https://www.youtube.com/embed/bsdO8XT1x44" allowfullscreen></iframe>
-          </div>
-          <div class="video-meta">
-            <h4>Sena Ndileelela (Am I Worthy)</h4>
-            <p>Phillip Lisomona ft. Ashers Masempela</p>
-          </div>
-        </div>
-
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="footer-container">
-      <div class="footer-brand">
-        <div class="logo" onclick="resetToHomeView()">
-          <i class="fa-solid fa-music"></i> Lisomusic
-        </div>
-        <p>Your premier dynamic gateway for hosting, exploring, and streaming the heartbeat of authentic Zambian instrumentation, gospel, and rhythm creations.</p>
-      </div>
-      <div class="footer-links">
-        <div class="footer-column">
-          <h5>Navigation</h5>
-          <ul>
-            <li><a href="#" onclick="resetToHomeView()">Home</a></li>
-            <li><a href="#" onclick="scrollToCatalogSection()">Discover Artists</a></li>
-            <li><a href="#" onclick="scrollToVideoSection()">Featured Videos</a></li>
-          </ul>
-        </div>
-        <div class="footer-column">
-          <h5>Content Engine</h5>
-          <ul>
-            <li><a href="#" onclick="viewArtistPlaylist('phillip-lisomona')">Phillip Lisomona</a></li>
-            <li><a href="#" onclick="document.getElementById('admin-tag-uploader').click()">Upload Portal (MP3)</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; 2026 Lisomusic. All Rights Reserved || Powered by Lisotech Innovations</p>
-      <div class="footer-socials">
-        <a href="https://youtube.com/@PhillipLisomonaMusic" target="_blank"><i class="fa-brands fa-youtube"></i></a>
-        <a href="https://www.facebook.com/lisotechinnovations"><i class="fa-brands fa-facebook"></i></a>
-        <a href="https://wa.me/260974101130"><i class="fa-brands fa-whatsapp"></i></a>
-      </div>
-    </div>
-  </footer>
-
-  <div class="audio-player" id="audioPlayer">
-    <div class="player-info">
-      <h4 id="playerTitle">Select a track</h4>
-      <p id="playerArtist">Lisomusic Stream</p>
-    </div>
-    <div class="player-controls">
-      <audio id="mainAudio" src=""></audio>
-      <button onclick="togglePlay()" id="playBtn"><i class="fa-solid fa-play"></i></button>
-    </div>
-  </div>
-
-  <script>
-    // Global State Memory Store Repository
-    const CORE_STORE = {
-      artists: [{
-          id: "phillip-lisomona",
-          name: "Phillip Lisomona",
-          avatar: "p1.jpg",
-          metaDescription: "Resident Gospel and Traditional Fusion Artist",
-          albums: [{
-              title: "Album 1: Kotwembela Collection",
-              releaseYear: "2026",
-              tracks: [{
-                  title: "Kotwembela",
-                  src: "phillip.mp3"
-                },
-                {
-                  title: "Eyi-Nyika",
-                  src: "nyika.mp3"
-                },
-                {
-                  title: "Ndakulumba",
-                  src: "ndakulumba.mp3"
-                },
-                {
-                  title: "Hena Ndilelela",
-                  src: "hena.mp3"
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phillip Lisomona | Gospel Musician, Music Producer & Entrepreneur - Lusaka, Zambia</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & Playfair Display -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,800;1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#0B132B',
+                            900: '#060B18',
+                            950: '#03060D'
+                        },
+                        gold: {
+                            400: '#F3D068',
+                            500: '#D4AF37',
+                            600: '#AA8518'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif']
+                    }
                 }
-              ]
-            },
-    // UI Render elements
-    const audio = document.getElementById('mainAudio');
-    const playBtn = document.getElementById('playBtn');
-    const player = document.getElementById('audioPlayer');
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar & glassmorphic utilities */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #060B18;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+        }
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF0B3 0%, #D4AF37 50%, #99750B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .gold-gradient-bg {
+            background: linear-gradient(135deg, #F3D068 0%, #D4AF37 100%);
+        }
+        .gold-gradient-bg:hover {
+            background: linear-gradient(135deg, #FFE082 0%, #E5C158 100%);
+        }
+    </style>
+</head>
+<body class="bg-navy-950 text-slate-100 font-sans antialiased selection:bg-gold-500 selection:text-navy-950 pb-28">
 
-    function renderArtists(artistsList) {
-      const grid = document.getElementById('artistsDisplayGrid');
-      grid.innerHTML = artistsList.map(artist => `
-        <div class="artist-card" onclick="viewArtistPlaylist('${artist.id}')">
-          <div class="card-img">
-            <img src="${artist.avatar}" alt="${artist.name}">
-            <div class="play-overlay"><i class="fa-solid fa-play"></i></div>
-          </div>
-          <h3>${artist.name}</h3>
-          <p>${artist.metaDescription}</p>
+    <!-- TOP ANNOUNCEMENT BAR -->
+    <div class="bg-gold-500 text-navy-950 text-xs sm:text-sm font-semibold py-1.5 px-4 text-center flex justify-between items-center max-w-full">
+        <span class="mx-auto flex items-center gap-2">
+            <i class="fa-solid fa-cross text-xs"></i>
+            <span>NEW ALBUM RELEASE: <strong>"Grace Beyond Measure"</strong> out now in Lusaka & Worldwide!</span>
+        </span>
+        <div class="hidden md:flex items-center gap-3 text-xs pr-4">
+            <span>Currency:</span>
+            <button id="currency-zmw" onclick="setCurrency('ZMW')" class="font-bold underline px-1 rounded hover:bg-navy-950/10">ZMW (K)</button>
+            <span>|</span>
+            <button id="currency-usd" onclick="setCurrency('USD')" class="font-normal px-1 rounded hover:bg-navy-950/10">USD ($)</button>
         </div>
-      `).join('');
-    }
+    </div>
 
-    function viewArtistPlaylist(id) {
-      const artist = CORE_STORE.artists.find(a => a.id === id);
-      if (!artist) return;
-      const wrapper = document.getElementById('playlistDisplayWrapper');
-      wrapper.style.display = 'block';
-      let albumsHTML = artist.albums.map(album => `
-        <div class="album-block">
-          <div class="album-title-meta"><i class="fa-solid fa-compact-disc"></i> ${album.title} (${album.releaseYear})</div>
-          ${album.tracks.map((track, idx) => `
-            <div class="track-row" onclick="playTrack('${track.title}', '${artist.name}', '${track.src}')">
-              <div class="track-row-left">
-                <span class="track-idx">${idx + 1}</span>
-                <span>${track.title}</span>
-              </div>
-              <i class="fa-solid fa-circle-play" style="color:#10b981; flex-shrink: 0;"></i>
+    <!-- MAIN NAVBAR -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-white/10 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Logo -->
+            <a href="#home" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-full gold-gradient-bg flex items-center justify-center text-navy-950 font-black text-xl shadow-lg shadow-gold-500/20 group-hover:scale-105 transition-transform">
+                    P
+                </div>
+                <div>
+                    <span class="font-serif text-xl sm:text-2xl font-bold tracking-tight text-white block">
+                        Phillip Lisomona
+                    </span>
+                    <span class="text-xs uppercase tracking-widest text-gold-400 font-semibold block -mt-1">
+                        SDA Gospel Artist & Producer
+                    </span>
+                </div>
+            </a>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a href="#home" class="text-slate-200 hover:text-gold-400 transition-colors">Home</a>
+                <a href="#albums" class="text-slate-200 hover:text-gold-400 transition-colors">Albums</a>
+                <a href="#singles" class="text-slate-200 hover:text-gold-400 transition-colors">Singles</a>
+                <a href="#services" class="text-slate-200 hover:text-gold-400 transition-colors">Studio Services</a>
+                <a href="#about" class="text-slate-200 hover:text-gold-400 transition-colors">About</a>
+                <a href="#contact" class="text-slate-200 hover:text-gold-400 transition-colors">Contact</a>
+            </nav>
+
+            <!-- Actions: Currency toggle -->
+            <div class="flex items-center gap-4">
+                <button onclick="toggleCurrency()" class="text-xs bg-slate-800 text-gold-400 px-3 py-1.5 rounded-lg border border-gold-500/30 flex items-center gap-1.5 hover:bg-slate-700 transition-colors">
+                    <span id="mobile-curr-label">ZMW (K)</span>
+                    <i class="fa-solid fa-arrows-rotate text-[10px]"></i>
+                </button>
+
+                <!-- Mobile Menu Toggle Button -->
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-300 hover:text-white" aria-label="Toggle Menu">
+                    <i class="fa-solid fa-bars text-2xl" id="menu-icon"></i>
+                </button>
             </div>
-          `).join('')}
         </div>
-      `).join('');
-      wrapper.innerHTML = `
-        <div class="playlist-view">
-          <div class="playlist-header">
-            <div class="artist-profile-summary">
-              <img src="${artist.avatar}">
-              <div>
-                <h2>${artist.name}</h2>
-                <p style="color:#9ca3af;">${artist.metaDescription}</p>
-              </div>
+
+        <!-- Mobile Menu Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-navy-900/95 border-b border-white/10 px-4 pt-2 pb-6 space-y-3">
+            <a href="#home" onclick="toggleMobileMenu()" class="block py-2 text-slate-200 font-medium hover:text-gold-400">Home</a>
+            <a href="#albums" onclick="toggleMobileMenu()" class="block py-2 text-slate-200 font-medium hover:text-gold-400">Albums</a>
+            <a href="#singles" onclick="toggleMobileMenu()" class="block py-2 text-slate-200 font-medium hover:text-gold-400">Singles</a>
+            <a href="#services" onclick="toggleMobileMenu()" class="block py-2 text-slate-200 font-medium hover:text-gold-400">Studio Services</a>
+            <a href="#about" onclick="toggleMobileMenu()" class="block py-2 text-slate-200 font-medium hover:text-gold-400">About Phillip</a>
+            <a href="#contact" onclick="toggleMobileMenu()" class="block py-2 text-slate-200 font-medium hover:text-gold-400">Contact & Location</a>
+        </div>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section id="home" class="relative min-h-[85vh] flex items-center justify-center overflow-hidden py-16 px-4">
+        <!-- Subtle Glow Overlay Background -->
+        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gold-500/10 rounded-full blur-[140px] pointer-events-none"></div>
+        <div class="absolute bottom-10 right-10 w-[350px] h-[350px] bg-blue-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+            
+            <!-- Hero Text Content -->
+            <div class="lg:col-span-7 text-center lg:text-left space-y-6">
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/30 text-gold-400 text-xs sm:text-sm font-medium">
+                    <i class="fa-solid fa-church"></i>
+                    <span>Seventh Day Adventist Church &bull; Lusaka, Zambia</span>
+                </div>
+                <h1 class="font-serif text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                    Phillip Lisomona is a renowned gospel musician of the Seventh Day Adventist Church based in Lusaka, Zambia <span class="text-gold-400">|</span> <span class="gold-gradient-text">a music producer and an Entrepreneur</span>
+                </h1>
+                <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 font-light leading-relaxed">
+                    Welcome to the official music store and studio portal for <strong>Phillip Lisomona</strong>. Discover spirit-filled worship tracks, complete albums, and professional music production services.
+                </p>
+
+                <!-- Hero CTA Buttons -->
+                <div class="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-4">
+                    <a href="#albums" class="gold-gradient-bg text-navy-950 font-bold px-8 py-4 rounded-xl shadow-lg shadow-gold-500/20 hover:scale-[1.02] transition-all flex items-center gap-3">
+                        <i class="fa-solid fa-compact-disc text-lg"></i>
+                        <span>Explore Albums</span>
+                    </a>
+                    <a href="#services" class="bg-slate-800/90 hover:bg-slate-700 text-white font-semibold px-8 py-4 rounded-xl border border-white/10 hover:border-gold-500/40 transition-all flex items-center gap-3">
+                        <i class="fa-solid fa-sliders text-gold-400"></i>
+                        <span>Book Studio Recording</span>
+                    </a>
+                </div>
+
+                <!-- Trust Badges -->
+                <div class="pt-8 grid grid-cols-3 gap-4 border-t border-white/10 max-w-md mx-auto lg:mx-0 text-center lg:text-left">
+                    <div>
+                        <p class="text-2xl font-bold text-white font-serif">SDA</p>
+                        <p class="text-xs text-slate-400">Gospel Minister</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-white font-serif">Producer</p>
+                        <p class="text-xs text-slate-400">Audio & Studio</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-bold text-white font-serif">Business</p>
+                        <p class="text-xs text-slate-400">Entrepreneur</p>
+                    </div>
+                </div>
             </div>
-            <button class="close-playlist-btn" onclick="document.getElementById('playlistDisplayWrapper').style.display='none'">Close View</button>
-          </div>
-          ${albumsHTML}
+
+            <!-- Hero Feature Card / Artist Highlight -->
+            <div class="lg:col-span-5 flex justify-center">
+                <div class="relative w-full max-w-md group">
+                    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-r from-gold-500 to-blue-600 blur opacity-30 group-hover:opacity-50 transition duration-500"></div>
+                    <div class="relative bg-navy-900 rounded-3xl p-6 border border-white/15 overflow-hidden shadow-2xl">
+                        <!-- Simulated Album / Artist Banner -->
+                        <div class="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-indigo-950 via-slate-900 to-navy-950 flex flex-col items-center justify-center text-center p-6 border border-white/10">
+                            <!-- Background decorative pattern -->
+                            <div class="absolute inset-0 opacity-20 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                            
+                            <div class="w-28 h-28 rounded-full border-4 border-gold-500/80 p-1 mb-4 shadow-xl relative z-10 overflow-hidden">
+                                <div class="w-full h-full rounded-full bg-slate-800 flex items-center justify-center text-gold-400 text-4xl font-serif font-black">
+                                    PL
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold uppercase tracking-widest text-gold-400 bg-gold-500/10 px-3 py-1 rounded-full mb-2">Featured Release</span>
+                            <h3 class="text-2xl font-serif font-bold text-white mb-1">Grace Beyond Measure</h3>
+                            <p class="text-slate-400 text-xs mb-4">12 Worship & Praise Tracks</p>
+                            
+                            <!-- Quick sample trigger -->
+                            <button onclick="playTrackSample('t1', 'Grace Beyond Measure', 'Phillip Lisomona', 'Grace Beyond Measure Album')" class="gold-gradient-bg text-navy-950 px-5 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 hover:scale-105 transition-transform shadow-md">
+                                <i class="fa-solid fa-play"></i>
+                                <span>Listen to Sample</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      `;
-      wrapper.scrollIntoView({
-        behavior: 'smooth'
-      });
-    }
+    </section>
 
-    function playTrack(title, artist, src) {
-      document.getElementById('playerTitle').innerText = title;
-      document.getElementById('playerArtist').innerText = artist;
-      audio.src = src;
-      player.style.visibility = 'visible';
-      audio.play();
-      playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-    }
+    <!-- FEATURED ALBUMS SECTION -->
+    <section id="albums" class="py-20 px-4 max-w-7xl mx-auto border-t border-white/5">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-gold-400 text-xs font-extrabold uppercase tracking-widest bg-gold-500/10 px-4 py-1.5 rounded-full border border-gold-500/20">
+                Official Discography
+            </span>
+            <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white mt-4 mb-3">
+                Featured Gospel Albums
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base">
+                Click on any album to view the full tracklist, play 30-second audio previews of each track, or purchase individual tracks and full albums.
+            </p>
+        </div>
 
-    function togglePlay() {
-      if (audio.paused) {
-        audio.play();
-        playBtn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-      } else {
-        audio.pause();
-        playBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-      }
-    }
+        <!-- Albums Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="albums-container">
+            <!-- Dynamic Injection via JavaScript -->
+        </div>
+    </section>
 
-    function filterGlobalTracks() {
-      const query = document.getElementById('globalSearchField').value.toLowerCase();
-      const filtered = CORE_STORE.artists.filter(artist =>
-        artist.name.toLowerCase().includes(query) ||
-        artist.metaDescription.toLowerCase().includes(query)
-      );
-      renderArtists(filtered);
-    }
+    <!-- TRACKLIST EXPANDABLE MODAL / DRAWER SECTION -->
+    <div id="album-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-navy-900 border border-gold-500/30 rounded-3xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 relative shadow-2xl">
+            <button onclick="closeAlbumModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full w-10 h-10 flex items-center justify-center">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
 
-    function resetToHomeView() {
-      document.getElementById('globalSearchField').value = '';
-      document.getElementById('playlistDisplayWrapper').style.display = 'none';
-      renderArtists(CORE_STORE.artists);
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
+            <div id="modal-content">
+                <!-- Content inserted dynamically -->
+            </div>
+        </div>
+    </div>
 
-    function scrollToCatalogSection() {
-      document.getElementById('catalog-section').scrollIntoView({
-        behavior: 'smooth'
-      });
-    }
+    <!-- STANDALONE SINGLES SECTION -->
+    <section id="singles" class="py-20 px-4 max-w-7xl mx-auto border-t border-white/5 bg-navy-900/40 rounded-3xl my-10">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12">
+            <div>
+                <span class="text-gold-400 text-xs font-extrabold uppercase tracking-widest">Hot Singles & Worship Songs</span>
+                <h2 class="font-serif text-3xl sm:text-4xl font-bold text-white mt-2">Latest Singles</h2>
+            </div>
+            <p class="text-slate-400 text-sm max-w-md mt-2 md:mt-0">
+                Purchase single tracks directly or listen to instant audio previews before downloading.
+            </p>
+        </div>
 
-    function scrollToVideoSection() {
-      document.getElementById('videos-section').scrollIntoView({
-        behavior: 'smooth'
-      });
-    }
-    // Initialize 
-    renderArtists(CORE_STORE.artists);
-  </script>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" id="singles-container">
+            <!-- Dynamic Singles List -->
+        </div>
+    </section>
+
+    <!-- MUSIC PRODUCER & STUDIO SERVICES SECTION -->
+    <section id="services" class="py-20 px-4 max-w-7xl mx-auto border-t border-white/5">
+        <div class="text-center max-w-3xl mx-auto mb-16">
+            <span class="text-gold-400 text-xs font-extrabold uppercase tracking-widest bg-gold-500/10 px-4 py-1.5 rounded-full border border-gold-500/20">
+                Lusaka Audio Studio
+            </span>
+            <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white mt-4 mb-3">
+                Professional Music Production
+            </h2>
+            <p class="text-slate-400 text-sm sm:text-base">
+                Phillip Lisomona provides industry-standard music arrangement, recording, vocal processing, and mastering services for gospel artists across Zambia and beyond.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Service 1 -->
+            <div class="glass-panel p-8 rounded-2xl hover:border-gold-500/50 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="w-14 h-14 rounded-2xl bg-gold-500/10 text-gold-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-microphone-lines"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white font-serif mb-2">Vocal Recording & Tuning</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Crisp, clean vocal tracking in an acoustically treated Lusaka booth with top pitch-correction and vocal polish.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-white/10 flex justify-between items-center">
+                    <span class="text-gold-400 font-bold text-sm service-price" data-zmw="800" data-usd="45">K800 / Session</span>
+                    <button onclick="openBookingModal('Vocal Recording & Tuning')" class="text-xs font-bold text-white bg-slate-800 hover:bg-gold-500 hover:text-navy-950 px-4 py-2 rounded-lg transition-colors">Book</button>
+                </div>
+            </div>
+
+            <!-- Service 2 -->
+            <div class="glass-panel p-8 rounded-2xl hover:border-gold-500/50 transition-all group flex flex-col justify-between border-gold-500/40 relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-gold-500 text-navy-950 text-[10px] font-black uppercase px-3 py-1 rounded-bl-xl">Popular</div>
+                <div>
+                    <div class="w-14 h-14 rounded-2xl bg-gold-500/10 text-gold-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white font-serif mb-2">Mixing & Mastering</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Get your songs radio-ready and digital store ready with professional balance, warm bass, and wide spatial clarity.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-white/10 flex justify-between items-center">
+                    <span class="text-gold-400 font-bold text-sm service-price" data-zmw="1500" data-usd="85">K1,500 / Track</span>
+                    <button onclick="openBookingModal('Mixing & Mastering')" class="text-xs font-bold text-white bg-slate-800 hover:bg-gold-500 hover:text-navy-950 px-4 py-2 rounded-lg transition-colors">Book</button>
+                </div>
+            </div>
+
+            <!-- Service 3 -->
+            <div class="glass-panel p-8 rounded-2xl hover:border-gold-500/50 transition-all group flex flex-col justify-between">
+                <div>
+                    <div class="w-14 h-14 rounded-2xl bg-gold-500/10 text-gold-400 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fa-solid fa-music"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white font-serif mb-2">Full Gospel Beat & Track Production</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                        Custom instrumentation, piano, drums, brass arrangements, and full song composing tailored to your spiritual vision.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-white/10 flex justify-between items-center">
+                    <span class="text-gold-400 font-bold text-sm service-price" data-zmw="3000" data-usd="170">K3,000 / Track</span>
+                    <button onclick="openBookingModal('Full Gospel Track Production')" class="text-xs font-bold text-white bg-slate-800 hover:bg-gold-500 hover:text-navy-950 px-4 py-2 rounded-lg transition-colors">Book</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT PHILLIP LISOMONA SECTION -->
+    <section id="about" class="py-20 px-4 max-w-7xl mx-auto border-t border-white/5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div class="lg:col-span-5 flex justify-center">
+                <div class="relative w-full max-w-md">
+                    <div class="aspect-[4/5] rounded-3xl bg-slate-800 border border-white/10 overflow-hidden relative shadow-2xl flex flex-col justify-end p-8">
+                        <div class="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/40 to-transparent z-10"></div>
+                        <!-- Background graphic art -->
+                        <div class="absolute inset-0 bg-gradient-to-br from-indigo-900 to-slate-900 flex items-center justify-center">
+                            <i class="fa-solid fa-guitar text-slate-700/30 text-9xl"></i>
+                        </div>
+                        
+                        <div class="relative z-20">
+                            <span class="text-gold-400 text-xs font-bold uppercase tracking-widest">SDA Minister & Producer</span>
+                            <h3 class="text-2xl font-serif font-bold text-white mt-1">Phillip Lisomona</h3>
+                            <p class="text-slate-300 text-xs mt-1"><i class="fa-solid fa-location-pin text-gold-400 mr-1"></i> Lusaka, Zambia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 space-y-6">
+                <span class="text-gold-400 text-xs font-extrabold uppercase tracking-widest bg-gold-500/10 px-4 py-1.5 rounded-full border border-gold-500/20">
+                    Biography
+                </span>
+                <h2 class="font-serif text-3xl sm:text-5xl font-bold text-white leading-tight">
+                    Dedicated to Raising Sound Worship & Praise Across Nations
+                </h2>
+                <p class="text-slate-300 text-base leading-relaxed font-light">
+                    <strong>Phillip Lisomona</strong> is a renowned gospel musician of the Seventh Day Adventist Church based in Lusaka, Zambia, a music producer, and an entrepreneur. With a deep passion for gospel ministry, Phillip composes and produces deeply inspiring tracks that resonate with praise, hope, and worship.
+                </p>
+                <p class="text-slate-300 text-base leading-relaxed font-light">
+                    Operating out of his studio in Lusaka, Phillip works with upcoming and established gospel artists to craft rich, spiritually touching, and sonically world-class music projects.
+                </p>
+                <div class="pt-4 flex flex-wrap gap-4">
+                    <div class="bg-navy-900 border border-white/10 px-5 py-3 rounded-xl">
+                        <i class="fa-solid fa-church text-gold-400 mb-1 block text-lg"></i>
+                        <span class="text-white text-sm font-bold block">SDA Church</span>
+                        <span class="text-slate-400 text-xs">Gospel Musician</span>
+                    </div>
+                    <div class="bg-navy-900 border border-white/10 px-5 py-3 rounded-xl">
+                        <i class="fa-solid fa-headphones text-gold-400 mb-1 block text-lg"></i>
+                        <span class="text-white text-sm font-bold block">Music Producer</span>
+                        <span class="text-slate-400 text-xs">Studio Recording</span>
+                    </div>
+                    <div class="bg-navy-900 border border-white/10 px-5 py-3 rounded-xl">
+                        <i class="fa-solid fa-briefcase text-gold-400 mb-1 block text-lg"></i>
+                        <span class="text-white text-sm font-bold block">Entrepreneur</span>
+                        <span class="text-slate-400 text-xs">Creative Ventures</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT / LOCATION SECTION -->
+    <section id="contact" class="py-20 px-4 max-w-7xl mx-auto border-t border-white/5">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div class="lg:col-span-5 space-y-6">
+                <span class="text-gold-400 text-xs font-extrabold uppercase tracking-widest">Get In Touch</span>
+                <h2 class="font-serif text-3xl font-bold text-white">Contact & Studio Enquiries</h2>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                    Have questions about album downloads, track licensing, or booking a recording session at our Lusaka studio? Reach out anytime!
+                </p>
+
+                <div class="space-y-4 pt-2">
+                    <div class="flex items-center gap-4 text-sm text-slate-300">
+                        <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-gold-400 shrink-0">
+                            <i class="fa-solid fa-location-dot"></i>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium">Studio Location</p>
+                            <p class="text-slate-400 text-xs">Lusaka, Zambia</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 text-sm text-slate-300">
+                        <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-gold-400 shrink-0">
+                            <i class="fa-solid fa-envelope"></i>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium">Email</p>
+                            <p class="text-slate-400 text-xs">contact@philliplisomona.com</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 text-sm text-slate-300">
+                        <div class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-gold-400 shrink-0">
+                            <i class="fa-solid fa-phone"></i>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium">Phone / WhatsApp</p>
+                            <p class="text-slate-400 text-xs">+260 97 1234567 / +260 96 7654321</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 bg-navy-900 p-8 rounded-3xl border border-white/10">
+                <h3 class="text-xl font-bold text-white font-serif mb-6">Send a Message</h3>
+                <form onsubmit="handleContactSubmit(event)" class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Your Name</label>
+                            <input type="text" required class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500" placeholder="John Banda">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Email or Mobile Number</label>
+                            <input type="text" required class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500" placeholder="097... or name@mail.com">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Subject</label>
+                        <input type="text" required class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500" placeholder="Album Inquiry / Recording Booking">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Message</label>
+                        <textarea rows="4" required class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-gold-500" placeholder="How can we assist you?"></textarea>
+                    </div>
+                    <button type="submit" class="w-full gold-gradient-bg text-navy-950 font-bold py-3.5 rounded-xl hover:scale-[1.01] transition-all">
+                        Send Message
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/10 bg-navy-900 py-10 px-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-center md:text-left">
+                <span class="font-serif text-lg font-bold text-white">Phillip Lisomona Music</span>
+                <p class="text-xs text-slate-400 mt-1">&copy; 2026 Phillip Lisomona. All Rights Reserved. Studio based in Lusaka, Zambia.</p>
+            </div>
+            <div class="flex items-center gap-6 text-slate-400 text-lg">
+                <a href="#" class="hover:text-gold-400 transition-colors"><i class="fa-brands fa-facebook"></i></a>
+                <a href="#" class="hover:text-gold-400 transition-colors"><i class="fa-brands fa-youtube"></i></a>
+                <a href="#" class="hover:text-gold-400 transition-colors"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="hover:text-gold-400 transition-colors"><i class="fa-brands fa-whatsapp"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- DIRECT PURCHASE / MEDIAFIRE ZIP CHECKOUT MODAL -->
+    <div id="checkout-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-navy-900 border border-gold-500/30 rounded-3xl w-full max-w-lg p-6 sm:p-8 relative shadow-2xl">
+            <button onclick="closeCheckoutModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div id="checkout-form-container">
+                <h3 class="text-2xl font-serif font-bold text-white mb-1">Buy Music Track</h3>
+                <p id="checkout-item-name" class="text-xs text-gold-400 font-bold mb-4">Item: Grace Beyond Measure</p>
+
+                <form onsubmit="handleDirectPurchase(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Full Name</label>
+                        <input type="text" required class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500" placeholder="John Banda">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Email Address (For Download Record)</label>
+                        <input type="email" required class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500" placeholder="you@example.com">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Payment Method</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="border border-gold-500/40 bg-slate-800 p-3 rounded-xl flex items-center gap-2 cursor-pointer text-xs font-semibold text-white">
+                                <input type="radio" name="paymethod" value="Mobile Money" checked class="accent-gold-500">
+                                <span>Mobile Money (MTN / Airtel / Zamtel)</span>
+                            </label>
+                            <label class="border border-white/10 bg-slate-800 p-3 rounded-xl flex items-center gap-2 cursor-pointer text-xs font-semibold text-white">
+                                <input type="radio" name="paymethod" value="Visa/Mastercard" class="accent-gold-500">
+                                <span>Visa / Mastercard</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="momo-number-field">
+                        <label class="block text-xs text-slate-400 mb-1">Mobile Money Phone Number</label>
+                        <input type="text" placeholder="097 / 096 / 095 XXX XXXX" class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500">
+                    </div>
+
+                    <div class="pt-4 border-t border-white/10 flex justify-between items-center">
+                        <div>
+                            <span class="text-xs text-slate-400 block">Total Price</span>
+                            <span id="checkout-total-amount" class="text-xl font-bold text-gold-400">K15.00</span>
+                        </div>
+                        <button type="submit" class="gold-gradient-bg text-navy-950 font-bold px-6 py-3 rounded-xl hover:scale-105 transition-transform">
+                            Pay & Unlock ZIP Download
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SUCCESS DOWNLOAD PANEL -->
+            <div id="download-success-panel" class="hidden text-center space-y-5 py-4">
+                <div class="w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center text-3xl mx-auto">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <h4 class="text-2xl font-serif font-bold text-white">Payment Successful!</h4>
+                    <p class="text-xs text-slate-300 mt-1">Your high-quality audio & album artwork ZIP bundle is ready on MediaFire.</p>
+                </div>
+                
+                <div class="bg-slate-800/90 p-4 rounded-2xl border border-white/10 text-left text-xs space-y-2">
+                    <div class="flex justify-between text-slate-400">
+                        <span>Item Purchased:</span>
+                        <span id="success-item-title" class="text-white font-bold">Track Name</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>Format:</span>
+                        <span class="text-gold-400 font-bold">HQ 320kbps MP3 / ZIP Bundle</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>Hosted on:</span>
+                        <span class="text-blue-400 font-bold">MediaFire Cloud Storage</span>
+                    </div>
+                </div>
+
+                <a id="mediafire-download-btn" href="#" target="_blank" rel="noopener noreferrer" class="block w-full gold-gradient-bg text-navy-950 font-extrabold py-4 rounded-xl shadow-xl hover:scale-[1.02] transition-transform flex items-center justify-center gap-3 text-sm">
+                    <i class="fa-solid fa-file-zipper text-lg"></i>
+                    <span>Download ZIP File on MediaFire</span>
+                </a>
+
+                <button onclick="closeCheckoutModal()" class="text-xs text-slate-400 hover:text-white underline block mx-auto">
+                    Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- STUDIO BOOKING MODAL -->
+    <div id="booking-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-navy-900 border border-gold-500/30 rounded-3xl w-full max-w-lg p-6 sm:p-8 relative shadow-2xl">
+            <button onclick="closeBookingModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <h3 class="text-2xl font-serif font-bold text-white mb-2">Book Studio Session</h3>
+            <p id="booking-service-name" class="text-xs text-gold-400 font-bold mb-6">Service: Audio Production</p>
+
+            <form onsubmit="handleBookingSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Artist / Group Name</label>
+                    <input type="text" required class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500" placeholder="e.g. Gospel Choir / Solo Artist">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Phone / WhatsApp Number</label>
+                    <input type="tel" required class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500" placeholder="+260 97 ...">
+                </div>
+                <div>
+                    <label class="block text-xs text-slate-400 mb-1">Preferred Date</label>
+                    <input type="date" required class="w-full bg-slate-800 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-gold-500">
+                </div>
+                <button type="submit" class="w-full gold-gradient-bg text-navy-950 font-bold py-3.5 rounded-xl hover:scale-105 transition-transform">
+                    Confirm Studio Request
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- GLOBAL PERSISTENT AUDIO PLAYER BAR -->
+    <div id="audio-player-bar" class="fixed bottom-0 left-0 right-0 z-40 bg-navy-900/95 border-t border-gold-500/30 backdrop-blur-lg px-4 py-3 transition-transform duration-300 transform translate-y-0">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            
+            <!-- Currently Playing Info -->
+            <div class="flex items-center gap-3 w-full sm:w-1/3">
+                <div id="player-art" class="w-12 h-12 rounded-xl gold-gradient-bg flex items-center justify-center text-navy-950 font-black shrink-0 shadow-md">
+                    <i class="fa-solid fa-music"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <h4 id="player-title" class="text-sm font-bold text-white truncate">Select a song preview</h4>
+                    <p id="player-subtitle" class="text-xs text-slate-400 truncate">Phillip Lisomona Music</p>
+                </div>
+            </div>
+
+            <!-- Player Controls & Progress -->
+            <div class="flex flex-col items-center gap-1.5 w-full sm:w-1/3">
+                <div class="flex items-center gap-4">
+                    <button onclick="rewind10Sec()" class="text-slate-400 hover:text-white text-sm"><i class="fa-solid fa-rotate-left"></i></button>
+                    <button id="player-play-btn" onclick="togglePlayPause()" class="w-10 h-10 rounded-full gold-gradient-bg text-navy-950 flex items-center justify-center font-bold hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                    <button onclick="forward10Sec()" class="text-slate-400 hover:text-white text-sm"><i class="fa-solid fa-rotate-right"></i></button>
+                </div>
+                <div class="w-full flex items-center gap-2 text-[10px] text-slate-400">
+                    <span id="player-current-time">0:00</span>
+                    <div class="flex-1 bg-slate-800 h-1.5 rounded-full overflow-hidden cursor-pointer relative" onclick="seekAudio(event)">
+                        <div id="player-progress-bar" class="bg-gold-500 h-full w-0 transition-all"></div>
+                    </div>
+                    <span id="player-duration">0:30</span>
+                </div>
+            </div>
+
+            <!-- Volume / Actions -->
+            <div class="hidden sm:flex items-center justify-end gap-3 w-1/3 text-slate-400">
+                <i class="fa-solid fa-volume-high text-xs"></i>
+                <input type="range" min="0" max="1" step="0.05" value="0.8" oninput="setPlayerVolume(this.value)" class="w-20 accent-gold-500 h-1 rounded-lg">
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT APPLICATION LOGIC -->
+    <script>
+        // Global Music Catalog Data with MediaFire Links
+        const musicCatalog = {
+            albums: [
+                {
+                    id: "alb-1",
+                    title: "Grace Beyond Measure",
+                    year: "2025",
+                    coverGradient: "from-amber-600 via-gold-600 to-navy-900",
+                    priceZmw: 150,
+                    priceUsd: 10,
+                    zipLink: "https://www.mediafire.com/file/example_grace_beyond_measure_album.zip/file",
+                    tracks: [
+                        { id: "t1-1", title: "Grace Beyond Measure (Intro)", duration: "3:45", priceZmw: 15, priceUsd: 1, freq: 320, zipLink: "https://www.mediafire.com/file/example_track1.zip/file" },
+                        { id: "t1-2", title: "Lusaka Worship Medley", duration: "5:20", priceZmw: 15, priceUsd: 1, freq: 440, zipLink: "https://www.mediafire.com/file/example_track2.zip/file" },
+                        { id: "t1-3", title: "He Has Changed My Story", duration: "4:10", priceZmw: 15, priceUsd: 1, freq: 520, zipLink: "https://www.mediafire.com/file/example_track3.zip/file" },
+                        { id: "t1-4", title: "Nalishiba (I Know You Lord)", duration: "4:50", priceZmw: 15, priceUsd: 1, freq: 360, zipLink: "https://www.mediafire.com/file/example_track4.zip/file" }
+                    ]
+                },
+                {
+                    id: "alb-2",
+                    title: "Lusaka Praise Vol. 1",
+                    year: "2024",
+                    coverGradient: "from-blue-700 via-indigo-900 to-navy-950",
+                    priceZmw: 120,
+                    priceUsd: 8,
+                    zipLink: "https://www.mediafire.com/file/example_lusaka_praise_vol1.zip/file",
+                    tracks: [
+                        { id: "t2-1", title: "Praise In My Heart", duration: "4:00", priceZmw: 15, priceUsd: 1, freq: 400, zipLink: "https://www.mediafire.com/file/example_praise_heart.zip/file" },
+                        { id: "t2-2", title: "Zambian Gospel Fire", duration: "3:55", priceZmw: 15, priceUsd: 1, freq: 480, zipLink: "https://www.mediafire.com/file/example_gospel_fire.zip/file" },
+                        { id: "t2-3", title: "Ever Faithful", duration: "4:30", priceZmw: 15, priceUsd: 1, freq: 300, zipLink: "https://www.mediafire.com/file/example_ever_faithful.zip/file" }
+                    ]
+                },
+                {
+                    id: "alb-3",
+                    title: "Heavenly Harmony",
+                    year: "2023",
+                    coverGradient: "from-yellow-600 via-orange-800 to-navy-900",
+                    priceZmw: 100,
+                    priceUsd: 7,
+                    zipLink: "https://www.mediafire.com/file/example_heavenly_harmony.zip/file",
+                    tracks: [
+                        { id: "t3-1", title: "Holy Is Your Name", duration: "5:12", priceZmw: 15, priceUsd: 1, freq: 350, zipLink: "https://www.mediafire.com/file/example_holy_name.zip/file" },
+                        { id: "t3-2", title: "Overflow of Joy", duration: "3:40", priceZmw: 15, priceUsd: 1, freq: 490, zipLink: "https://www.mediafire.com/file/example_overflow_joy.zip/file" }
+                    ]
+                }
+            ],
+            singles: [
+                { id: "s1", title: "Mwebakwata Amaka (Almighty God)", album: "Single Release", duration: "4:15", priceZmw: 20, priceUsd: 1.5, cover: "from-yellow-500 to-amber-800", freq: 440, zipLink: "https://www.mediafire.com/file/example_mwebakwata_amaka.zip/file" },
+                { id: "s2", title: "Victory Worship", album: "Single Release", duration: "3:50", priceZmw: 20, priceUsd: 1.5, cover: "from-blue-600 to-slate-900", freq: 380, zipLink: "https://www.mediafire.com/file/example_victory_worship.zip/file" },
+                { id: "s3", title: "No One Like Jesus", album: "Single Release", duration: "4:45", priceZmw: 20, priceUsd: 1.5, cover: "from-emerald-600 to-navy-950", freq: 500, zipLink: "https://www.mediafire.com/file/example_no_one_like_jesus.zip/file" },
+                { id: "s4", title: "Lusaka Faith Anthem", album: "Single Release", duration: "3:30", priceZmw: 20, priceUsd: 1.5, cover: "from-purple-600 to-navy-900", freq: 420, zipLink: "https://www.mediafire.com/file/example_lusaka_faith_anthem.zip/file" }
+            ]
+        };
+
+        // Application State
+        let currentCurrency = 'ZMW';
+        let isPlaying = false;
+        let currentTrack = null;
+        let playProgressInterval = null;
+        let currentAudioProgress = 0;
+        let selectedItemForPurchase = null;
+
+        // Web Audio Synthesizer for Audio Previews
+        let audioCtx = null;
+        let synthOsc = null;
+        let synthGain = null;
+
+        function initAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSynthesizedMelody(freq) {
+            initAudioContext();
+            stopSynthesizedMelody();
+
+            synthOsc = audioCtx.createOscillator();
+            synthGain = audioCtx.createGain();
+
+            synthOsc.type = 'triangle';
+            synthOsc.frequency.setValueAtTime(freq || 440, audioCtx.currentTime);
+            synthGain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+
+            synthOsc.connect(synthGain);
+            synthGain.connect(audioCtx.destination);
+            synthOsc.start();
+        }
+
+        function stopSynthesizedMelody() {
+            if (synthOsc) {
+                try {
+                    synthOsc.stop();
+                    synthOsc.disconnect();
+                } catch(e){}
+                synthOsc = null;
+            }
+        }
+
+        window.onload = function() {
+            renderAlbums();
+            renderSingles();
+        };
+
+        // Render Albums Grid
+        function renderAlbums() {
+            const container = document.getElementById('albums-container');
+            container.innerHTML = musicCatalog.albums.map(album => {
+                const price = currentCurrency === 'ZMW' ? `K${album.priceZmw}` : `$${album.priceUsd}`;
+                return `
+                    <div class="bg-navy-900 rounded-3xl p-6 border border-white/10 hover:border-gold-500/40 transition-all group flex flex-col justify-between">
+                        <div>
+                            <div class="relative aspect-square rounded-2xl bg-gradient-to-br ${album.coverGradient} border border-white/10 shadow-xl overflow-hidden flex flex-col items-center justify-center p-6 mb-6 group-hover:scale-[1.02] transition-transform">
+                                <div class="w-20 h-20 rounded-full border-2 border-gold-500/50 flex items-center justify-center text-white text-3xl font-serif font-black shadow-inner">
+                                    <i class="fa-solid fa-compact-disc text-gold-400"></i>
+                                </div>
+                                <span class="text-[10px] uppercase font-bold tracking-widest text-slate-300 mt-4 bg-black/40 px-3 py-1 rounded-full">${album.year}</span>
+                            </div>
+
+                            <h3 class="text-xl font-serif font-bold text-white mb-1">${album.title}</h3>
+                            <p class="text-xs text-slate-400 mb-4">${album.tracks.length} Songs &bull; Gospel Album</p>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-lg font-bold text-gold-400">${price}</span>
+                                <button onclick="openAlbumModal('${album.id}')" class="text-xs text-slate-300 hover:text-white underline flex items-center gap-1">
+                                    <span>View Tracklist</span>
+                                    <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="openAlbumModal('${album.id}')" class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold py-2.5 rounded-xl border border-white/10 transition-colors">
+                                    Preview Tracks
+                                </button>
+                                <button onclick="openDirectPurchaseModal('${album.id}', 'album')" class="gold-gradient-bg text-navy-950 text-xs font-bold py-2.5 rounded-xl transition-transform hover:scale-105">
+                                    Buy Album
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Singles Grid
+        function renderSingles() {
+            const container = document.getElementById('singles-container');
+            container.innerHTML = musicCatalog.singles.map(single => {
+                const price = currentCurrency === 'ZMW' ? `K${single.priceZmw}` : `$${single.priceUsd}`;
+                return `
+                    <div class="bg-navy-950 p-4 rounded-2xl border border-white/10 hover:border-gold-500/30 transition-all flex flex-col justify-between">
+                        <div>
+                            <div class="aspect-square rounded-xl bg-gradient-to-br ${single.cover} flex items-center justify-center text-gold-400 text-3xl mb-3 relative group">
+                                <i class="fa-solid fa-music"></i>
+                                <button onclick="playTrackSample('${single.id}', '${single.title}', 'Phillip Lisomona', 'Single', ${single.freq})" class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-2xl">
+                                    <i class="fa-solid fa-circle-play text-gold-400"></i>
+                                </button>
+                            </div>
+                            <h4 class="text-sm font-bold text-white truncate">${single.title}</h4>
+                            <p class="text-xs text-slate-400 mb-3">Single &bull; ${single.duration}</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-white/5 gap-2">
+                            <span class="text-xs font-bold text-gold-400 shrink-0">${price}</span>
+                            <button onclick="openDirectPurchaseModal('${single.id}', 'single')" class="text-xs gold-gradient-bg text-navy-950 px-3 py-2 rounded-lg font-bold transition-all hover:scale-105 shadow-md flex items-center gap-1.5 shrink-0">
+                                <i class="fa-solid fa-download text-[10px]"></i>
+                                <span>Buy this track</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Open Album Details & Tracklist Modal
+        function openAlbumModal(albumId) {
+            const album = musicCatalog.albums.find(a => a.id === albumId);
+            if (!album) return;
+
+            const modalContent = document.getElementById('modal-content');
+            const albumPrice = currentCurrency === 'ZMW' ? `K${album.priceZmw}` : `$${album.priceUsd}`;
+
+            modalContent.innerHTML = `
+                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-6">
+                    <div class="w-32 h-32 rounded-2xl bg-gradient-to-br ${album.coverGradient} flex items-center justify-center text-gold-400 text-4xl shrink-0 border border-white/10 shadow-lg">
+                        <i class="fa-solid fa-compact-disc"></i>
+                    </div>
+                    <div class="text-center sm:text-left">
+                        <span class="text-xs font-bold uppercase tracking-widest text-gold-400">Gospel Album</span>
+                        <h3 class="text-2xl font-serif font-bold text-white mt-1">${album.title}</h3>
+                        <p class="text-xs text-slate-400 mt-1">Released ${album.year} &bull; ${album.tracks.length} Praise Songs</p>
+                        <div class="mt-4 flex items-center justify-center sm:justify-start gap-4">
+                            <span class="text-xl font-bold text-gold-400">${albumPrice}</span>
+                            <button onclick="openDirectPurchaseModal('${album.id}', 'album')" class="gold-gradient-bg text-navy-950 text-xs font-bold px-5 py-2.5 rounded-xl shadow-lg hover:scale-105 transition-transform flex items-center gap-2">
+                                <i class="fa-solid fa-file-zipper"></i>
+                                <span>Buy Full Album ZIP</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-white/10 pt-4">
+                    <h4 class="text-sm font-bold text-white mb-3">Track Previews & Downloads:</h4>
+                    <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        ${album.tracks.map((track, idx) => {
+                            const trackPrice = currentCurrency === 'ZMW' ? `K${track.priceZmw}` : `$${track.priceUsd}`;
+                            return `
+                                <div class="bg-slate-800/60 hover:bg-slate-800 p-3 rounded-xl flex items-center justify-between gap-3 text-xs">
+                                    <div class="flex items-center gap-3 overflow-hidden">
+                                        <button onclick="playTrackSample('${track.id}', '${track.title}', 'Phillip Lisomona', '${album.title}', ${track.freq})" class="w-8 h-8 rounded-full bg-gold-500/10 text-gold-400 hover:bg-gold-500 hover:text-navy-950 flex items-center justify-center transition-colors shrink-0">
+                                            <i class="fa-solid fa-play text-xs"></i>
+                                        </button>
+                                        <div class="truncate">
+                                            <p class="font-semibold text-white truncate">${idx + 1}. ${track.title}</p>
+                                            <p class="text-[10px] text-slate-400">${track.duration} &bull; 30s Audio Sample</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3 shrink-0">
+                                        <span class="font-bold text-gold-400">${trackPrice}</span>
+                                        <button onclick="openDirectPurchaseModal('${track.id}', 'track', '${album.id}')" class="gold-gradient-bg text-navy-950 px-3 py-1.5 rounded-lg font-bold transition-all hover:scale-105 flex items-center gap-1">
+                                            <i class="fa-solid fa-download text-[10px]"></i>
+                                            <span>Buy this track</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('album-modal').classList.remove('hidden');
+        }
+
+        function closeAlbumModal() {
+            document.getElementById('album-modal').classList.add('hidden');
+        }
+
+        // Direct Purchase & MediaFire Download Flow
+        function openDirectPurchaseModal(itemId, type, parentAlbumId = null) {
+            closeAlbumModal();
+            
+            if (type === 'single') {
+                const item = musicCatalog.singles.find(s => s.id === itemId);
+                selectedItemForPurchase = { ...item, typeName: 'Single Track' };
+            } else if (type === 'album') {
+                const item = musicCatalog.albums.find(a => a.id === itemId);
+                selectedItemForPurchase = { ...item, typeName: 'Full Album ZIP' };
+            } else if (type === 'track') {
+                const album = musicCatalog.albums.find(a => a.id === parentAlbumId);
+                const track = album ? album.tracks.find(t => t.id === itemId) : null;
+                selectedItemForPurchase = { ...track, typeName: 'Album Single Track' };
+            }
+
+            if (!selectedItemForPurchase) return;
+
+            const price = currentCurrency === 'ZMW' 
+                ? `K${selectedItemForPurchase.priceZmw}` 
+                : `$${selectedItemForPurchase.priceUsd}`;
+
+            document.getElementById('checkout-item-name').innerText = `Item: ${selectedItemForPurchase.title} (${selectedItemForPurchase.typeName})`;
+            document.getElementById('checkout-total-amount').innerText = price;
+
+            // Reset panel state
+            document.getElementById('checkout-form-container').classList.remove('hidden');
+            document.getElementById('download-success-panel').classList.add('hidden');
+
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+        }
+
+        function handleDirectPurchase(e) {
+            e.preventDefault();
+
+            if (!selectedItemForPurchase) return;
+
+            // Display success panel with direct MediaFire download link
+            document.getElementById('checkout-form-container').classList.add('hidden');
+            document.getElementById('download-success-panel').classList.remove('hidden');
+
+            document.getElementById('success-item-title').innerText = selectedItemForPurchase.title;
+            const mediafireBtn = document.getElementById('mediafire-download-btn');
+            mediafireBtn.href = selectedItemForPurchase.zipLink || "https://www.mediafire.com";
+        }
+
+        // Global Audio Player Controls
+        function playTrackSample(id, title, artist, subtitle, freq = 440) {
+            currentTrack = { id, title, artist, subtitle, freq };
+            currentAudioProgress = 0;
+            isPlaying = true;
+
+            document.getElementById('player-title').innerText = title;
+            document.getElementById('player-subtitle').innerText = `${artist} - ${subtitle}`;
+            
+            updatePlayerPlayButton();
+            playSynthesizedMelody(freq);
+
+            if (playProgressInterval) clearInterval(playProgressInterval);
+            
+            playProgressInterval = setInterval(() => {
+                if (isPlaying) {
+                    currentAudioProgress += 0.5;
+                    if (currentAudioProgress >= 30) {
+                        currentAudioProgress = 0;
+                        togglePlayPause();
+                    }
+                    updateProgressUI();
+                }
+            }, 500);
+        }
+
+        function togglePlayPause() {
+            if (!currentTrack) return;
+            isPlaying = !isPlaying;
+            updatePlayerPlayButton();
+
+            if (isPlaying) {
+                playSynthesizedMelody(currentTrack.freq || 440);
+            } else {
+                stopSynthesizedMelody();
+            }
+        }
+
+        function updatePlayerPlayButton() {
+            const btn = document.getElementById('player-play-btn');
+            btn.innerHTML = isPlaying ? '<i class="fa-solid fa-pause"></i>' : '<i class="fa-solid fa-play"></i>';
+        }
+
+        function updateProgressUI() {
+            const percentage = (currentAudioProgress / 30) * 100;
+            document.getElementById('player-progress-bar').style.width = `${percentage}%`;
+            document.getElementById('player-current-time').innerText = `0:${Math.floor(currentAudioProgress).toString().padStart(2, '0')}`;
+        }
+
+        function rewind10Sec() {
+            currentAudioProgress = Math.max(0, currentAudioProgress - 10);
+            updateProgressUI();
+        }
+
+        function forward10Sec() {
+            currentAudioProgress = Math.min(30, currentAudioProgress + 10);
+            updateProgressUI();
+        }
+
+        function seekAudio(e) {
+            const bar = e.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const newPct = clickX / rect.width;
+            currentAudioProgress = newPct * 30;
+            updateProgressUI();
+        }
+
+        function setPlayerVolume(val) {
+            if (synthGain && audioCtx) {
+                synthGain.gain.setValueAtTime(val * 0.2, audioCtx.currentTime);
+            }
+        }
+
+        // Currency Toggle System
+        function setCurrency(curr) {
+            currentCurrency = curr;
+            document.getElementById('currency-zmw').className = curr === 'ZMW' ? 'font-bold underline px-1 rounded' : 'font-normal px-1 rounded';
+            document.getElementById('currency-usd').className = curr === 'USD' ? 'font-bold underline px-1 rounded' : 'font-normal px-1 rounded';
+            document.getElementById('mobile-curr-label').innerText = `${curr} (${curr === 'ZMW' ? 'K' : '$'})`;
+
+            document.querySelectorAll('.service-price').forEach(el => {
+                const zmw = el.getAttribute('data-zmw');
+                const usd = el.getAttribute('data-usd');
+                el.innerText = curr === 'ZMW' ? `K${zmw}` : `$${usd}`;
+            });
+
+            renderAlbums();
+            renderSingles();
+        }
+
+        function toggleCurrency() {
+            setCurrency(currentCurrency === 'ZMW' ? 'USD' : 'ZMW');
+        }
+
+        // Studio Booking Handling
+        function openBookingModal(serviceName) {
+            document.getElementById('booking-service-name').innerText = `Service: ${serviceName}`;
+            document.getElementById('booking-modal').classList.remove('hidden');
+        }
+
+        function closeBookingModal() {
+            document.getElementById('booking-modal').classList.add('hidden');
+        }
+
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+            alert('Your studio session booking request has been sent! Phillip Lisomona Studio team will contact you shortly via phone/WhatsApp.');
+            closeBookingModal();
+        }
+
+        function handleContactSubmit(e) {
+            e.preventDefault();
+            alert('Thank you for contacting Phillip Lisomona Music. Your message has been received.');
+            e.target.reset();
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+    </script>
 </body>
-
 </html>
